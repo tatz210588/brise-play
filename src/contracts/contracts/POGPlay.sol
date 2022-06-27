@@ -14,11 +14,9 @@ contract POGPlay is Initializable, ERC20Upgradeable, OwnableUpgradeable {
   address[] public lastLotteryRoundWinners;
   address payable public admin;
   uint256 internal startKey;
-  uint256 public constant duration = 1 minutes;
+  uint256 public constant duration = 14 days;
   uint256 public total;
-  //address public evoTokenAddress = 0x4a9C121080f6D9250Fc0143f41B595fD172E31bf;
   address evoTokenAddress;
-  //address treasuryWallet = 0x02F21d483BeCfe74E8E1C67590d265E493498d1E;
 
   mapping(uint256 => PlayersGravity) public playerData;
 
@@ -37,8 +35,9 @@ contract POGPlay is Initializable, ERC20Upgradeable, OwnableUpgradeable {
     __Ownable_init();
     admin = payable(msg.sender);
     startKey = block.timestamp;
-    //evoTokenAddress = 0xd9145CCE52D386f254917e481eB44e9943F39138;
-    evoTokenAddress = 0x02F21d483BeCfe74E8E1C67590d265E493498d1E;
+    //evoTokenAddress = 0x267Ae4bA9CE5ef3c87629812596b0D89EcBD81dD; // EVO token address provided by Sathya
+    //evoTokenAddress = 0x02F21d483BeCfe74E8E1C67590d265E493498d1E; //my ERC20 LoloCoin
+    evoTokenAddress = 0x796963FD33a4D40091449Dde1781b2F65298A9dF; //Lolcoin of bitgert testnet
     total = 0;
   }
 
@@ -115,14 +114,14 @@ contract POGPlay is Initializable, ERC20Upgradeable, OwnableUpgradeable {
         playerData[i + 1].playerAddress == msg.sender &&
         block.timestamp >= playerData[i + 1].end
       ) {
+        //uint noOfDaysPassed = (block.timestamp -  playerData[i+1].startTime) / 86400;
         uint256 noOfDaysPassed = (block.timestamp -
-          playerData[i + 1].startTime) / 86400;
+          playerData[i + 1].startTime) / 1 days;
         uint256 interest = calculateNetInterestValue(
           playerData[i + 1].amount,
           noOfDaysPassed
         );
-        IERC20Upgradeable(evoTokenAddress).transferFrom(
-          address(this),
+        IERC20Upgradeable(evoTokenAddress).transfer(
           msg.sender,
           (playerData[i + 1].amount + interest)
         );
@@ -145,22 +144,20 @@ contract POGPlay is Initializable, ERC20Upgradeable, OwnableUpgradeable {
         block.timestamp < playerData[i + 1].end
       ) {
         uint256 noOfDaysPassed = (block.timestamp -
-          playerData[i + 1].startTime) / 86400;
+          playerData[i + 1].startTime) / 1 days;
         uint256 taxDeductionRate = 28 - (2 * noOfDaysPassed);
-        uint256 taxDeduction = amount * (taxDeductionRate / 100);
+        uint256 taxDeduction = (amount * taxDeductionRate) / 100;
         uint256 inHand = amount - taxDeduction;
         if (playerData[i + 1].amount > amount) {
-          IERC20Upgradeable(evoTokenAddress).transferFrom(
-            address(this),
-            msg.sender,
+          IERC20Upgradeable(evoTokenAddress).transfer(
+            payable(msg.sender),
             inHand
           );
           playerData[i + 1].amount -= inHand;
           break;
         } else {
-          IERC20Upgradeable(evoTokenAddress).transferFrom(
-            address(this),
-            msg.sender,
+          IERC20Upgradeable(evoTokenAddress).transfer(
+            payable(msg.sender),
             playerData[i + 1].amount
           );
           playerData[i + 1].amount = 0;
@@ -175,12 +172,12 @@ contract POGPlay is Initializable, ERC20Upgradeable, OwnableUpgradeable {
     uint256 totalPrizeMoney = 0;
     for (uint256 i = 0; i < totalItemCount; i++) {
       uint256 noOfDaysPassed = (block.timestamp - playerData[i + 1].startTime) /
-        86400;
+        1 days;
       uint256 p = playerData[i + 1].amount;
       uint256 intr = 0;
-      for (uint256 j = 0; j < noOfDaysPassed; i++) {
+      for (uint256 j = 0; j < noOfDaysPassed; j++) {
         //checking needed
-        intr += ((p * 3) / 1000);
+        intr += (p * 3) / 1000;
         p += intr;
       }
       totalPrizeMoney += intr;
@@ -208,21 +205,17 @@ contract POGPlay is Initializable, ERC20Upgradeable, OwnableUpgradeable {
     uint256 burnAmount = 0;
     for (uint256 i = 0; i < totalItemCount; i++) {
       uint256 noOfDaysPassed = (block.timestamp - playerData[i + 1].startTime) /
-        86400;
+        1 days;
       uint256 p = playerData[i + 1].amount;
       uint256 intr = 0;
       for (uint256 j = 0; j < noOfDaysPassed; i++) {
         //checking needed
-        intr += ((p * 2) / 1000);
+        intr += (p * 2) / 1000;
         p += intr;
       }
       burnAmount += intr;
     }
-    IERC20Upgradeable(evoTokenAddress).transferFrom(
-      address(this),
-      address(0),
-      burnAmount
-    );
+    IERC20Upgradeable(evoTokenAddress).transfer(address(0), burnAmount);
     return burnAmount;
   }
 
@@ -232,12 +225,13 @@ contract POGPlay is Initializable, ERC20Upgradeable, OwnableUpgradeable {
     for (uint256 i = 0; i < totalItemCount; i++) {
       if (playerData[i + 1].playerAddress == msg.sender) {
         uint256 noOfDaysPassed = (block.timestamp -
-          playerData[i + 1].startTime) / 86400;
+          playerData[i + 1].startTime) / 1 days;
+        //weiValue/(1 ether)
         uint256 p = playerData[i + 1].amount;
         uint256 intr = 0;
         for (uint256 j = 0; j < noOfDaysPassed; j++) {
           //checking needed
-          intr += ((p * 13283933) / 10000000000);
+          intr += (p * 13283933) / 10000000000;
           p += intr;
         }
         totalInterest += intr;
@@ -264,15 +258,10 @@ contract POGPlay is Initializable, ERC20Upgradeable, OwnableUpgradeable {
     uint256 distributablePrizeMoney = (prizeMoney * 80) / 100;
     uint256 burnAblePrizeMoney = (prizeMoney * 20) / 100;
     uint256 perWinnerPrizeAmount = distributablePrizeMoney / winners.length;
-    IERC20Upgradeable(evoTokenAddress).transferFrom(
-      address(this),
-      address(0),
-      burnAblePrizeMoney
-    ); //20% prize money will be burned
+    IERC20Upgradeable(evoTokenAddress).transfer(address(0), burnAblePrizeMoney); //20% prize money will be burned
     for (uint256 i = 0; i < winners.length; i++) {
       //distributing 80% prize money equally to all winners
-      IERC20Upgradeable(evoTokenAddress).transferFrom(
-        address(this),
+      IERC20Upgradeable(evoTokenAddress).transfer(
         winners[i],
         perWinnerPrizeAmount
       );
@@ -316,7 +305,18 @@ contract POGPlay is Initializable, ERC20Upgradeable, OwnableUpgradeable {
 
   function chanceOfUserToBeWinner() public view returns (uint256) {
     uint256 totalDeposit = getMyTotalDeposits();
-    uint256 chancePercent = (totalDeposit * 100) / total;
-    return chancePercent;
+    uint256 chancePercent = 1;
+    if (total != 0) {
+      chancePercent = (totalDeposit * 100) / total;
+    }
+    return chancePercent * 10**18;
+  }
+
+  function withdraw(uint256 amount) public onlyOwner {
+    require(
+      amount <= IERC20Upgradeable(evoTokenAddress).balanceOf(address(this)),
+      'Insufficient Balance'
+    );
+    IERC20Upgradeable(evoTokenAddress).transfer(admin, amount);
   }
 }

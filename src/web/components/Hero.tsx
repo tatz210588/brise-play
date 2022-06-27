@@ -94,12 +94,18 @@ async function showScreenDetailsOnLoad(){
   const network = await provider.getNetwork()
   const signer = provider.getSigner()
   const contractTx = new ethers.Contract(getConfigByChain(network.chainId)[0].contractProxyAddress, POGPlay.abi, signer)  
-  setPrizeMoney(formatBigNumber(await contractTx.getPrizeMoney()))
-  setLocked(formatBigNumber(await contractTx.netLockedAmount()))
-  setMyDeposit(formatBigNumber(await contractTx.getMyTotalDeposits()));
-  setMyReward(formatBigNumber(await contractTx.getMyAccumulatedInterest()))
-  setMyChanceofWinning(formatBigNumber(await contractTx.chanceOfUserToBeWinner()))
-  setClaimableAmount(formatBigNumber(await contractTx.netClaimableAmount()))
+  const prize = await contractTx.getPrizeMoney()
+  setPrizeMoney(ethers.utils.formatUnits(prize.toString(),'ether').slice(0, 5))
+  const lock = await contractTx.netLockedAmount()
+  setLocked(ethers.utils.formatUnits(lock.toString(),'ether').slice(0, 5))
+  const depsit = await contractTx.getMyTotalDeposits()
+  setMyDeposit(ethers.utils.formatUnits(depsit.toString(),'ether').slice(0, 5))
+  const tx = await contractTx.getMyAccumulatedInterest()
+  setMyReward(ethers.utils.formatUnits(tx.toString(),'ether').slice(0,7))
+  const chance = await contractTx.chanceOfUserToBeWinner()
+  setMyChanceofWinning(ethers.utils.formatUnits(chance.toString()).slice(0,7))
+  const claimTx = await contractTx.netClaimableAmount()
+  setClaimableAmount(ethers.utils.formatUnits(claimTx.toString(),'ether').slice(0,7))
 
 }
 async function approve(){
@@ -180,7 +186,7 @@ async function redeemClaimable(){
                             <div className={style.assetName}>Current APY:</div>
                             <div className={style.assetName}>Daily ROI: </div>
                             <div className={style.assetName}>My Deposit: </div>
-                            <div className={style.assetName}>Reward: </div>
+                            <div className={style.assetName}>Earnings: </div>
                             <div className={style.assetName}>My Chance: </div>
                             <div className={style.assetName}>Claimable: </div>
                             <div className={style.assetName}>Locked: </div>                         

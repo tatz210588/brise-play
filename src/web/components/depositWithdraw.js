@@ -22,7 +22,8 @@ const DepositWithdraw = ({type}) => {
   
 
   useEffect(()=>{
-    showEvoBalanceOfUser()
+    console.log(data?.address)
+    data?showEvoBalanceOfUser():null
   },[data?.address])
   
   async function showEvoBalanceOfUser(){
@@ -31,7 +32,7 @@ const DepositWithdraw = ({type}) => {
       const network = await provider.getNetwork()
       const signer = provider.getSigner()  
       const tokenContract = new ethers.Contract(getConfigByChain(network.chainId)[0].tokenContract, POGPlay.abi, signer) 
-      data?setMyWalletEvoBalance(formatBigNumber(await tokenContract.balanceOf(data?.address))):setMyWalletEvoBalance(0)
+      setMyWalletEvoBalance(formatBigNumber(await tokenContract.balanceOf(data?.address)))
       const contractTx = new ethers.Contract(getConfigByChain(network.chainId)[0].contractProxyAddress, POGPlay.abi, signer)
       setDepositAmount(formatBigNumber(await contractTx.netLockedAmount()))
   }
@@ -42,6 +43,7 @@ const DepositWithdraw = ({type}) => {
     const network = await provider.getNetwork()
     const signer = provider.getSigner()
     const etherAmount = ethers.utils.parseUnits(document.getElementById(type).value, 'ether')
+    console.log("am",formatBigNumber(etherAmount))
     const contractTx = new ethers.Contract(getConfigByChain(network.chainId)[0].contractProxyAddress, POGPlay.abi, signer)
     const tx = await contractTx.deposit(etherAmount)
     toast('Transaction pending... Please wait', {icon: '👏'});
