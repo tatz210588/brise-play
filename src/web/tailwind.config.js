@@ -1,0 +1,20 @@
+module.exports = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx}',
+    './components/**/*.{js,ts,jsx,tsx}',
+  ],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      fontFamily: {
+        poppins: "'Poppins', sans-serif",
+      },
+      colors: {
+        dark: 'rgb(24 24 27)',
+      },
+    },
+  },
+  plugins: [
+    require('tailwindcss-textshadow')
+  ],
+}
