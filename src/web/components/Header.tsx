@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { ethers } from 'ethers'
 import Image from 'next/image'
 import logo from '../assets/EvoFinance_white.svg'
+import toast,{Toaster} from 'react-hot-toast'
 // import PhoneInput from 'react-phone-number-input'
 import Link from 'next/link'
 import {ConnectButton} from '@rainbow-me/rainbowkit'
@@ -13,6 +14,10 @@ import { Fragment } from 'react'
 import { Popover, Transition } from '@headlessui/react'
 import { FaRegAddressCard } from 'react-icons/fa'
 import { chain } from 'wagmi'
+import {useAccount,useNetwork} from 'wagmi'
+import { getConfigByChain } from '../config'
+import POGPlay from '../artifacts/contracts/POGPlay.sol/POGPlay.json'
+import { ellipseAddress } from './utils'
 // import CircleLoader from 'react-spinners/CircleLoader'
 // import Modal from 'react-modal'
 // import qrlogo from '../assets/QR.png'
@@ -59,34 +64,45 @@ const style = {
 }
 
 const Header = () => {
-  const [admin, setAdmin] = useState<typeof address>()
-  const [done, setDone] = useState(false)
+  const { data } = useAccount()
+  const {activeChain} = useNetwork()
+  const [admin, setAdmin] = useState<any>()
   const [openMenu, setOpenMenu] = React.useState(true)
-
-  const address = 'sdsdsd'//window.ethereum.request({ method: 'eth_requestAccounts' })[0]
 
   const handleBtnClick = () => {
     setOpenMenu(!openMenu)
   }
 
-  // useEffect(() => {
-  //   if (!window.ethereum) {
-  //     toast.error(
-  //       'Install a crypto wallet(ex: Metamask, Coinbase, etc..) to proceed'
-  //     )
-  //   } else if (!chain) {
-  //     toast.error('Connect Your Wallet.')
-  //   } else {
-  //     toast.success(`Welcome ${ellipseAddress(address)} !!`)
-  //     getAdmin()
-  //   }
-  //   setDone(true)
-  // }, [chain]) 
+  useEffect(() => {
+    if (!window.ethereum) {
+      toast.error(
+        'Install a crypto wallet(ex: Metamask, Coinbase, etc..) to proceed'
+      )
+    } else if (!activeChain) {
+      toast.error('Connect Your Wallet.')
+    } else {
+      toast.success(`Welcome ${ellipseAddress(data?.address)} !!`)
+      getAdmin()
+    }
+  }, [data?.address,activeChain]) 
+
+  async function getAdmin() {
+    await (window as any).ethereum.send('eth_requestAccounts') // opens up metamask extension and connects Web2 to Web3
+    const provider = new ethers.providers.Web3Provider(window.ethereum) //create provider
+    const signer = provider.getSigner()
+    const network = await provider.getNetwork()
+
+    const contractTx = new ethers.Contract(getConfigByChain(network.chainId)[0].contractProxyAddress, POGPlay.abi, signer)  
+    const tx = await contractTx.getAdmin()
+    setAdmin(tx) //comment this line to withdraw admin restrictions
+    //setAdmin(tx) //comment this line to restrict admin access
+  }
 
   return (
     <nav className="flex items-center justify-between flex-wrap bg-[#040f13] px-2">
+      <Toaster position="top-center" reverseOrder={false} />
       <Link href="/">
-        <div className="flex items-center flex-shrink-0 text-white mr-6">
+        <div className="flex items-center flex-shrink-0 text-white mr-6 cursor-pointer">
           <Image className={style.img} src={logo} height={50} width={60} />
           <div className={style.logoText}>P.O.G</div>
         </div>
@@ -95,9 +111,16 @@ const Header = () => {
       <div className="">
         {openMenu && (
           <div className={style.headerItemsTab}>
+            {data?.address === admin && data ? (
+                <Link href="/admin">
+                  <div className={style.headerItem}>Control Panel</div>
+                </Link>
+              ) : (
+                <div className={style.headerItem}></div>
+            )}
             <div className={`text-sm justify-end `}>
                 <ConnectButton chainStatus="icon"  />
-              </div>
+            </div>
           </div>
         )}
 

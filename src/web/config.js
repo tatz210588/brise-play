@@ -10,7 +10,7 @@ export const networkConfig = {
 
     "64668": [
         {
-            contractProxyAddress: "0x90179ba681708dC36C38828153130D5B7836b7D5", //proxy deployment
+            contractProxyAddress: "0x9414C157938bf269414da2c2fd3e776d10Ca050C", //proxy deployment
             tokenContract: "0x796963FD33a4D40091449Dde1781b2F65298A9dF",
             networkName: "Bitgert Testnet"
         },

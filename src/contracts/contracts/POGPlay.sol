@@ -17,6 +17,7 @@ contract POGPlay is Initializable, ERC20Upgradeable, OwnableUpgradeable {
   uint256 public constant duration = 14 days;
   uint256 public total;
   address evoTokenAddress;
+  uint256 public noOfWinners;
 
   mapping(uint256 => PlayersGravity) public playerData;
 
@@ -43,6 +44,10 @@ contract POGPlay is Initializable, ERC20Upgradeable, OwnableUpgradeable {
 
   function getAdmin() public view returns (address payable) {
     return admin;
+  }
+
+  function setNoOfWinners(uint256 _noOfWinners) public onlyOwner {
+    noOfWinners = _noOfWinners;
   }
 
   function deposit(uint256 amount) public payable returns (uint256) {
@@ -268,7 +273,7 @@ contract POGPlay is Initializable, ERC20Upgradeable, OwnableUpgradeable {
     }
   }
 
-  function startLottery(uint256 noOfWinners) public payable onlyOwner {
+  function startLottery() public payable onlyOwner {
     for (uint256 i = 0; i < noOfWinners; i++) {
       if (winners.length != noOfWinners) {
         uint256 luckyRandomNumber = getRandomNumber();
@@ -296,9 +301,6 @@ contract POGPlay is Initializable, ERC20Upgradeable, OwnableUpgradeable {
       }
     }
     distributePrizeMoney();
-    //uint contractBalance = IERC20Upgradeable(evoTokenAddress).balanceOf(address(this));
-    //sending total profit to owner
-    //IERC20Upgradeable(evoTokenAddress).transferFrom(address(this),owner,contractBalance);
     lastLotteryRoundWinners = winners;
     delete winners;
   }

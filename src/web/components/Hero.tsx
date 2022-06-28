@@ -9,8 +9,6 @@ import Image from 'next/image'
 import logo from '../assets/EvoFinance_white.svg'
 import toast,{Toaster} from 'react-hot-toast'
 
-
-
 const style = {
   wrapper: `relative`,
   searchBar: `flex flex-1 mx-[0.8rem] w-[100%] items-center bg-transparent rounded-[0.8rem] hover:bg-transparent mt-2 p-1 pay-search`,
@@ -39,9 +37,6 @@ const style = {
   logoText: ` ml-[0.8rem] font-semibold text-2xl tracking-tight text-[#ffffff]`,
   img: `fill-current h-8 w-8 mr-2`,
 }
-  
-
-
 
 const Hero = () => {
 
